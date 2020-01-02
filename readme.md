@@ -6,9 +6,9 @@ If you're familiar with my [AASM](https://github.com/aasm/aasm), then this is a 
 Usage Example
 ---
 
-````
-//test.js
-
+```js
+//test.js model
+const stateMachine = require("sequelize-state-machine");
 class Test extends Model {
 
     static states() {
@@ -81,5 +81,5 @@ stateMachine.addStates(Test.states())
 
 export default Test;
 
-````
+```
 
