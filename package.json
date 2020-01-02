@@ -16,7 +16,15 @@
     "state",
     "machine"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:billyadelphia/sequelize-state-machine.git"
+  },
   "author": "billy putra barokah <billyorigin@gmail.com>",
+  "homepage": "https://github.com/billyadelphia/sequelize-state-machine",
+  "bugs": {
+    "url": "https://github.com/billyadelphia/sequelize-state-machine/issues"
+  },
   "devDependencies": {
     "@babel/cli": "^7.7.4",
     "@babel/core": "^7.7.4",

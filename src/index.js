@@ -178,7 +178,6 @@ const inStates = function (states, state) {
  */
 
 const fromPreviousState = function (transition, state, previousState) {
-    console.log(state, previousState)
     if(state !== previousState){
         if (typeof transition === "object") {
             let isTrue = false;
@@ -193,7 +192,7 @@ const fromPreviousState = function (transition, state, previousState) {
                             isTrue = false;
                         }
                     }else{
-                        if(transitionData.from[previousState]){
+                        if(transitionData.from.indexOf(previousState) === 0){
                             isTrue = true;
                             break;
                         }else{
