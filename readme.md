@@ -7,7 +7,7 @@ Usage Example
 ---
 
 ````
-//model test.js
+//test.js
 
 class Test extends Model {
 
