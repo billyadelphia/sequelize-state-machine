@@ -1,6 +1,6 @@
 {
   "name": "sequelize-state-machine",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Sequelize model state machine plugin",
   "main": "dist",
   "license": "MIT",
