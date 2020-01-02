@@ -1,11 +1,14 @@
-# Sequelize State Machine (Work in progress)
-
+## Sequelize State Machine (Work in progress)
 If you're familiar with my [AASM](https://github.com/aasm/aasm), then this is a similar take – just implemented in Sequelize v5 Model.
+----
+### Installation
+```
+npm install sequelize-state-machine
+or
+yarn add sequelize-state-machine
+```
 ---
-
-Usage Example
----
-
+### Usage Example
 ```js
 //test.js model
 const stateMachine = require("sequelize-state-machine");
