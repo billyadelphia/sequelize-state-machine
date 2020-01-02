@@ -1,0 +1,26 @@
+{
+  "name": "sequelize-state-machine",
+  "version": "0.0.1",
+  "description": "Sequelize model state machine plugin",
+  "main": "dist",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8"
+  },
+  "scripts": {
+    "build": "babel src --out-dir dist --ignore 'node_modules/*','dist/*','test/*' "
+  },
+  "keywords": [
+    "sequelize",
+    "state machine",
+    "state",
+    "machine"
+  ],
+  "author": "billy putra barokah <billyorigin@gmail.com>",
+  "devDependencies": {
+    "@babel/cli": "^7.7.4",
+    "@babel/core": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "@babel/register": "^7.7.4"
+  }
+}
