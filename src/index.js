@@ -192,7 +192,7 @@ const fromPreviousState = function (transition, state, previousState) {
                             isTrue = false;
                         }
                     }else{
-                        if(transitionData.from.indexOf(previousState) === 0){
+                        if(transitionData.from.includes(previousState)){
                             isTrue = true;
                             break;
                         }else{
