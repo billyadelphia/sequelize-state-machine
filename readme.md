@@ -11,7 +11,7 @@ yarn add sequelize-state-machine
 ### Usage Example
 ```js
 //test.js model
-const stateMachine = require("sequelize-state-machine");
+import stateMachine from "sequelize-state-machine";
 class Test extends Model {
 
     static states() {
