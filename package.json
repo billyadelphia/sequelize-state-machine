@@ -1,34 +1,46 @@
 {
-  "name": "sequelize-state-machine",
-  "version": "0.0.7",
-  "description": "Sequelize model state machine plugin",
-  "main": "dist",
-  "license": "MIT",
-  "engines": {
-    "node": ">=8"
-  },
-  "scripts": {
-    "build": "babel src --out-dir dist --ignore 'node_modules/*','dist/*','test/*' "
-  },
-  "keywords": [
-    "sequelize",
-    "state machine",
-    "state",
-    "machine"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:billyadelphia/sequelize-state-machine.git"
-  },
-  "author": "billy putra barokah <billyorigin@gmail.com>",
-  "homepage": "https://github.com/billyadelphia/sequelize-state-machine",
-  "bugs": {
-    "url": "https://github.com/billyadelphia/sequelize-state-machine/issues"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.7.4",
-    "@babel/core": "^7.7.4",
-    "@babel/preset-env": "^7.7.4",
-    "@babel/register": "^7.7.4"
-  }
+    "name": "sequelize-state-machine",
+    "version": "0.1.0",
+    "description": "Sequelize model state machine plugin",
+    "main": "dist",
+    "license": "MIT",
+    "engines": {
+        "node": ">=10"
+    },
+    "scripts": {
+        "build": "yarn tsc",
+        "tsc": "tsc --project tsconfig.compile.json",
+        "tsc:w": "tsc --project tsconfig.json -w",
+        "test": "yarn test:lint && yarn test:coverage",
+        "test:unit": "cross-env NODE_ENV=test mocha",
+        "test:coverage": "cross-env NODE_ENV=test nyc mocha",
+        "test:lint": "tslint --project tsconfig.json",
+        "test:lint:fix": "tslint --project tsconfig.json --fix",
+        "prettier": "prettier '{src,test}/**/*.ts' --write"
+    },
+    "keywords": [
+        "sequelize",
+        "state machine",
+        "state",
+        "machine"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:billyadelphia/sequelize-state-machine.git"
+    },
+    "author": "billy putra barokah <billyorigin@gmail.com>",
+    "homepage": "https://github.com/billyadelphia/sequelize-state-machine",
+    "bugs": {
+        "url": "https://github.com/billyadelphia/sequelize-state-machine/issues"
+    },
+    "devDependencies": {
+        "@types/validator": "^13.1.0",
+        "mocha": "^8.1.3",
+        "prettier": "^2.1.1",
+        "sequelize": "^6.3.5",
+        "typescript": "^4.0.2"
+    },
+    "dependencies": {
+        "tslib": "^2.0.1"
+    }
 }
