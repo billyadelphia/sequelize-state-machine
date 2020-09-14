@@ -4,17 +4,9 @@
  */
 
 import { Model } from "sequelize";
-interface IPrototype {
-  prototype: any;
-}
+import { SequelizeModel, Hooks } from "./types";
+import StateMachineValidation from "./StateMachineValidation";
 
-type Hooks = "beforeSave" | "afterSave";
-interface states {
-  initial: boolean;
-  final: true;
-}
-
-type SequelizeModel = Model & IPrototype & string;
 class StateMachine {
   states!: Array<Object | string>;
   field!: "state" | string;
@@ -29,27 +21,56 @@ class StateMachine {
   }
 
   init(SequelizeModel: SequelizeModel): StateMachine {
-    const stateMachine = this;
-    const states = stateMachine.states;
-    const field = stateMachine.field;
-    const transitionIsStrict = stateMachine.transitionIsStrict;
-    const transition = stateMachine.transition;
+    const states = this.states;
+    const field: string = this.field;
+    const transitionIsStrict = this.transitionIsStrict;
+    const transition = this.transition;
     const hooks: Hooks[] = ["beforeSave", "afterSave"];
-
-    // adding magic method
+    const stateMachine = this;
+    /**
+     * Adding magic method
+     */
     for (const trs of Object.keys(transition)) {
-      SequelizeModel.prototype[trs] = async () => {
+      // add can function
+      SequelizeModel.prototype[`can${capitalize(trs)}`] = async function () {
+        if (this) {
+          try {
+            console.log("trs", trs);
+            console.log("this[field]", this[field]);
+            console.log("transition[trs].to", transition[trs].to);
+            const can = stateMachine.can(
+              transition[trs],
+              this[field],
+              transition[trs].to
+            );
+            if (!can) {
+              return false;
+            }
+            return true;
+          } catch (e) {
+            throw new StateMachineValidation(e.message);
+          }
+        }
+      };
+
+      // add state machine function
+      SequelizeModel.prototype[trs] = async function () {
         if (SequelizeModel) {
           try {
-            let updating: any = {};
-            updating[field] = transition[trs].to;
-            return await SequelizeModel.update(updating);
+            // let updating: any = {};
+            // updating[field] = transition[trs].to;
+            SequelizeModel[field] = transition[trs].to;
+            await this.save();
+            return SequelizeModel;
           } catch (e) {
-            throw e;
+            throw new StateMachineValidation(e.message);
           }
         }
       };
     }
+    /**
+     * End of adding magic method
+     */
 
     for (const hook of hooks) {
       SequelizeModel.addHook(
@@ -59,16 +80,16 @@ class StateMachine {
           try {
             const dataValue = instance[field];
 
-            if (inStates(states, dataValue)) {
+            if (this.inStates(states, dataValue)) {
               if (instance.previous(dataValue) !== dataValue) {
                 let hookValidation = true;
                 let hookFunction = "after";
 
                 if (hook === "beforeSave") {
                   if (instance.isNewRecord) {
-                    hookValidation = isInitialState(states, dataValue);
+                    hookValidation = this.isInitialState(states, dataValue);
                   } else {
-                    hookValidation = fromPreviousState(
+                    hookValidation = this.fromPreviousState(
                       transition,
                       dataValue,
                       instance.previous(dataValue)
@@ -79,6 +100,9 @@ class StateMachine {
 
                 if (transitionIsStrict ? hookValidation : true) {
                   let beforeValidate = true;
+                  /**
+                   * validation function
+                   */
                   if (
                     typeof instance[`validate${capitalize(dataValue)}`] ===
                     "function"
@@ -87,6 +111,11 @@ class StateMachine {
                       `validate${capitalize(instance[field])}`
                     ]();
                   }
+                  /**
+                   * end of validation function
+                   */
+
+                  // if validation correct or not returning false, then procced to after or before function
                   if (beforeValidate !== false) {
                     if (
                       typeof instance[
@@ -98,18 +127,20 @@ class StateMachine {
                       ]();
                     }
                   } else {
-                    throw new Error(
+                    throw new StateMachineValidation(
                       `error : validate${capitalize(
                         instance[field]
                       )} is invalid`
                     );
                   }
                 } else {
-                  throw new Error(`error : incorrect transition validation`);
+                  throw new StateMachineValidation(
+                    `error : incorrect transition validation`
+                  );
                 }
               }
             } else {
-              throw new Error("error : state not found");
+              throw new StateMachineValidation("error : state not found");
             }
           } catch (e) {
             throw e;
@@ -126,7 +157,7 @@ class StateMachine {
       this.states = states;
       return this;
     } else {
-      throw new Error("states must be an array");
+      throw new StateMachineValidation("states must be an array");
     }
   }
 
@@ -146,101 +177,123 @@ class StateMachine {
     this.transitionIsStrict = typeof bool === "boolean" ? bool : true;
     return this;
   }
-}
 
-const inStates = (states: Array<Object | string>, state: string) => {
-  if (states && states.length) {
-    let correctState = false;
-    for (const status of states) {
-      if (typeof status === "object") {
-        if (status[state]) {
-          correctState = true;
-          break;
-        }
-      } else {
-        if (status === state) {
-          correctState = true;
-          break;
-        }
-      }
-    }
-    return correctState;
-  } else {
-    throw new Error("states is not an array !");
-  }
-};
-
-const fromPreviousState = (
-  transition: Object,
-  state: string,
-  previousState: string
-) => {
-  if (state !== previousState) {
-    if (typeof transition === "object") {
-      let isTrue = false;
-      for (const object of Object.keys(transition)) {
-        let transitionData = transition[object];
-        if (transitionData.to === state) {
-          if (typeof transitionData.from === "string") {
-            if (transitionData.from === previousState) {
-              isTrue = true;
-              break;
-            } else {
-              isTrue = false;
-            }
-          } else {
-            if (transitionData.from.includes(previousState)) {
-              isTrue = true;
-              break;
-            } else {
-              isTrue = false;
-            }
-          }
-        } else {
-          isTrue = false;
-        }
-      }
-
-      return isTrue;
-    } else {
-      throw new Error("transition is not an object");
-    }
-  } else {
-    return false;
-  }
-};
-
-const isInitialState = function (
-  states: Array<Object | string>,
-  state: string
-) {
-  if (states && states.length) {
-    let correctState = true;
-    for (const status of states) {
-      if (typeof status === "object") {
-        if (status[state]) {
-          if (status[state].initial === false) {
-            correctState = false;
+  private inStates(states: Array<Object | string>, state: string) {
+    if (states && states.length) {
+      let correctState = false;
+      for (const status of states) {
+        if (typeof status === "object") {
+          if (status[state]) {
+            correctState = true;
             break;
           }
-          if (status[state].initial === true) {
+        } else {
+          if (status === state) {
             correctState = true;
+            break;
+          }
+        }
+      }
+      return correctState;
+    } else {
+      throw new StateMachineValidation("states is not an array !");
+    }
+  }
+
+  private can(
+    transition: { from: string | string[]; to: string | string[] },
+    from: string,
+    to: string
+  ) {
+    if (from !== to) {
+      if (typeof transition === "object") {
+        let fromTrue = false;
+        if (typeof transition.from === "string") {
+          fromTrue = transition.from === from;
+        } else {
+          fromTrue = transition.from.includes(from);
+        }
+        let toTrue = false;
+        if (typeof transition.to === "string") {
+          toTrue = transition.to === to;
+        } else {
+          toTrue = transition.to.includes(from);
+        }
+        return fromTrue && toTrue;
+      }
+    }
+    return false;
+  }
+
+  private fromPreviousState(
+    transition: Object,
+    state: string,
+    previousState: string
+  ) {
+    if (state !== previousState) {
+      if (typeof transition === "object") {
+        let isTrue = false;
+        for (const object of Object.keys(transition)) {
+          let transitionData = transition[object];
+          if (transitionData.to === state) {
+            if (typeof transitionData.from === "string") {
+              if (transitionData.from === previousState) {
+                isTrue = true;
+                break;
+              } else {
+                isTrue = false;
+              }
+            } else {
+              if (transitionData.from.includes(previousState)) {
+                isTrue = true;
+                break;
+              } else {
+                isTrue = false;
+              }
+            }
+          } else {
+            isTrue = false;
+          }
+        }
+
+        return isTrue;
+      } else {
+        throw new StateMachineValidation("transition is not an object");
+      }
+    } else {
+      return false;
+    }
+  }
+
+  private isInitialState(states: Array<Object | string>, state: string) {
+    if (states && states.length) {
+      let correctState = true;
+      for (const status of states) {
+        if (typeof status === "object") {
+          if (status[state]) {
+            if (status[state].initial === false) {
+              correctState = false;
+              break;
+            }
+            if (status[state].initial === true) {
+              correctState = true;
+              break;
+            }
+          } else {
+            correctState = false;
             break;
           }
         } else {
           correctState = false;
           break;
         }
-      } else {
-        correctState = false;
-        break;
       }
+      return correctState;
+    } else {
+      throw new StateMachineValidation("states is not an array !");
     }
-    return correctState;
-  } else {
-    throw new Error("states is not an array !");
   }
-};
+}
 
 const capitalize = (s: string): string => {
   if (typeof s !== "string") return "";

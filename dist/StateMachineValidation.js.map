@@ -1,0 +1,1 @@
+{"version":3,"file":"StateMachineValidation.js","sourceRoot":"","sources":["../src/StateMachineValidation.ts"],"names":[],"mappings":";;AAAA,MAAqB,sBAAuB,SAAQ,KAAK;IACvD,YAAY,KAAa;QACvB,KAAK,CAAC,KAAK,CAAC,CAAC;IACf,CAAC;CACF;AAJD,yCAIC","sourcesContent":["export default class StateMachineValidation extends Error {\n  constructor(error: string) {\n    super(error);\n  }\n}\n"]}

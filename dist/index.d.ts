@@ -2,11 +2,7 @@
  * Sequelize state machine
  * Author billyadelphia
  */
-import { Model } from "sequelize";
-interface IPrototype {
-    prototype: any;
-}
-declare type SequelizeModel = Model & IPrototype & string;
+import { SequelizeModel } from "./types";
 declare class StateMachine {
     states: Array<Object | string>;
     field: "state" | string;
@@ -18,6 +14,10 @@ declare class StateMachine {
     stateField(field: string): this;
     addTransition(transition: Object): this;
     isStrict(bool: boolean): this;
+    private inStates;
+    private can;
+    private fromPreviousState;
+    private isInitialState;
 }
 declare const _default: StateMachine;
 export default _default;
